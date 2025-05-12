@@ -1,29 +1,38 @@
 import cv2
 import numpy as np
 
-def minkowski_subtraction(img, kernel_size=5):
+def minkowski_subtraction(img):
 
     img_blur = cv2.bilateralFilter(img, 5, 20, 20)
-    kernel = np.ones((kernel_size, kernel_size), np.uint8)
-    eroded = cv2.erode(img_blur, kernel, iterations=1)
-    dilated = cv2.dilate(img_blur, kernel, iterations=1)
+    kernel1 = np.ones((5, 5), np.uint8)
+    kernel2 = np.ones((2, 2), np.uint8)
+    eroded = cv2.erode(img_blur, kernel1, iterations=1)
+    dilated = cv2.dilate(img_blur, kernel2, iterations=1)
     diff = cv2.absdiff(dilated, eroded)
     diff_norm = cv2.normalize(diff, None, 0, 255, cv2.NORM_MINMAX)
-    diff_contrast = cv2.convertScaleAbs(diff_norm, alpha=2.5, beta=0)
+    diff_contrast = cv2.convertScaleAbs(diff_norm, alpha=5, beta=1)
+    cv2.imshow("minkowski",diff_contrast)
     return diff_contrast
 
+
+
+
+
+
 def segment_fruit(nir_image):
+
 
     #Application of a Gaussian Blur
     blur_temp = cv2.GaussianBlur(nir_image,(3,3),0)
 
     #Otsu Thresholding to segment the image
-    th, otsu_temp = cv2.threshold(blur_temp, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
+    th , otsu_temp = cv2.threshold(blur_temp, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
 
     #filling of the holes inside the fruit blob using a flood-fill approach
     h, w = otsu_temp.shape[:2]
     m1 = np.zeros((h+2, w+2), np.uint8)
     ff1 = otsu_temp.copy()
+    cv2.imshow("ff1", ff1)
     cv2.floodFill(ff1, m1, (0,0), 255)
     #we then invert the result obtained by the floodfill operation in order to highlight the holes
     holes_temp = cv2.bitwise_not(ff1)
@@ -40,7 +49,7 @@ def segment_fruit(nir_image):
 def detect_defects(fruit_mask, mask_temp):
 
     # Apply Minkowski Subtraction for edge extraction
-    edges_temp = minkowski_subtraction(fruit_mask, kernel_size=3)
+    edges_temp = minkowski_subtraction(fruit_mask)
     # Sharpen the edges
     sharpen_kernel = np.array([[-1, -1, -1], 
                                [-1,  9, -1], 
@@ -50,7 +59,9 @@ def detect_defects(fruit_mask, mask_temp):
     
     _, high_thresh = cv2.threshold(sharpened_edges, 180, 255, cv2.THRESH_BINARY)
     cv2.imshow(" high_thresh", high_thresh)
-    
+    # img_blur = cv2.bilateralFilter(edges_temp, 9, 35, 35)
+    # edge  = cv2.Canny(img_blur, threshold1=50, threshold2=150)
+    # cv2.imshow("canny", edge)
     #Perform a closing operation to have better defects' edges
     clo_ker = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
     high_thresh = high_thresh.astype(np.uint8)
@@ -96,7 +107,7 @@ def contour_defects(open_temp, color_image):
         center = (int(x), int(y))
         radius = int(radius)
         # Draw the circle around the contour
-        cv2.circle(rounded_contours_img, center, radius, (0, 255, 0), 2)
+        cv2.circle(rounded_contours_img, center, radius + 5, (0, 255, 0), 2)
 
     # Superimpose the rounded contours onto the original color image
     result_image = cv2.addWeighted(color_image, 1, rounded_contours_img, 0.5, 0)
@@ -111,8 +122,8 @@ def run1():
     picNo = input("Enter the picture number(1, 2 or 3): ")
 
     # Load NIR and color images
-    nir_image = cv2.imread('Task1pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('Task1pics/C1_00000' + picNo +'.png')
+    nir_image = cv2.imread('C:\Fruit_Inspection\Task1pics\C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('C:\Fruit_Inspection\Task1pics\C1_00000' + picNo +'.png')
 
     # rgb_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
     fruit_mask, mask_temp = segment_fruit(nir_image)
