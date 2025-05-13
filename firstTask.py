@@ -15,10 +15,6 @@ def minkowski_subtraction(img):
     return diff_contrast
 
 
-
-
-
-
 def segment_fruit(nir_image):
 
 
@@ -57,14 +53,17 @@ def detect_defects(fruit_mask, mask_temp):
     sharpened_edges = cv2.filter2D(edges_temp, -1, sharpen_kernel)
     cv2.imshow("sharpened_edges", sharpened_edges.astype(np.uint8))
     
-    _, high_thresh = cv2.threshold(sharpened_edges, 180, 255, cv2.THRESH_BINARY)
-    cv2.imshow(" high_thresh", high_thresh)
-    # img_blur = cv2.bilateralFilter(edges_temp, 9, 35, 35)
-    # edge  = cv2.Canny(img_blur, threshold1=50, threshold2=150)
-    # cv2.imshow("canny", edge)
+    _, high_thresh1 = cv2.threshold(sharpened_edges, 180, 255, cv2.THRESH_BINARY)
+    cv2.imshow(" high_thresh", high_thresh1)
+    
+    img_blur = cv2.bilateralFilter(fruit_mask, 11, 35, 35)
+    edge  = cv2.Canny(img_blur, threshold1=50, threshold2=130)
+    cv2.imshow("canny", edge)
+    
     #Perform a closing operation to have better defects' edges
     clo_ker = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
-    high_thresh = high_thresh.astype(np.uint8)
+    #high_thresh = high_thresh.astype(np.uint8)
+    high_thresh = edge.astype(np.uint8)
     closing_temp=cv2.morphologyEx(high_thresh, cv2.MORPH_CLOSE, clo_ker)
     cv2.imshow("closing_temp", closing_temp)
 
@@ -122,8 +121,8 @@ def run1():
     picNo = input("Enter the picture number(1, 2 or 3): ")
 
     # Load NIR and color images
-    nir_image = cv2.imread('C:\Fruit_Inspection\Task1pics\C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('C:\Fruit_Inspection\Task1pics\C1_00000' + picNo +'.png')
+    nir_image = cv2.imread('Task1pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('Task1pics/C1_00000' + picNo +'.png')
 
     # rgb_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
     fruit_mask, mask_temp = segment_fruit(nir_image)
