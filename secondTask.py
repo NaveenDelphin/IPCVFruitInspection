@@ -3,13 +3,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import mahalanobis
 
-def run2():
-    picNo = input("Enter the picture number(4 or 5): ")
-    # Load NIR and color images
-    nir_image = cv2.imread('Task2pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('Task2pics/C1_00000' + picNo +'.png')
-    rgb_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
-
+def segment_fruit(nir_image, rgb_image):
     #Application of a Gaussian Blur
     blur_nir = cv2.GaussianBlur(nir_image,(3,3),0)
 
@@ -37,6 +31,9 @@ def run2():
     app_rgb = rgb_image * bool_mask_nir.astype(np.uint8)
     cv2.imshow('MaskedImage', app_rgb)
 
+    return app_rgb, mask_rgb
+
+def kmeans_fruit(app_rgb):
     # Convert the color image to the LAB color space
     color_lab = cv2.cvtColor(app_rgb, cv2.COLOR_RGB2LAB)
     # Extract the A and B channels
@@ -67,6 +64,10 @@ def run2():
     # Create a mask for the russet area
     russet_mask = (segmented_img == russet_cluster_idx).astype(np.uint8)
 
+    return russet_cluster_idx, lab_ab, segmented_img
+
+def mahalanobis_fruit(russet_cluster_idx, lab_ab, segmented_img, rgb_image):
+
     # Compute the mean and covariance of the russet cluster
     russet_pixels = lab_ab[segmented_img == russet_cluster_idx]
     mean_russet = np.mean(russet_pixels, axis=0)
@@ -84,6 +85,23 @@ def run2():
     # Convert the final image to BGR for display with OpenCV
     final_russet_img_bgr = cv2.cvtColor(final_russet_img, cv2.COLOR_RGB2BGR)
 
+    return final_russet_img_bgr
+
+def run2():
+    picNo = input("Enter the picture number(4 or 5): ")
+    # Load NIR and color images
+    nir_image = cv2.imread('Task2pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('Task2pics/C1_00000' + picNo +'.png')
+    rgb_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
+
+    app_rgb, mask_temp = segment_fruit(nir_image, rgb_image)
+
+    russet_cluster_idx, lab_ab, segmented_img = kmeans_fruit(app_rgb)
+
+    final_russet_img_bgr = mahalanobis_fruit(russet_cluster_idx, lab_ab, segmented_img, rgb_image)    
+
+
+
     # Show the results
     cv2.imshow('Original Image', color_image)
     cv2.imshow('Russet Detection', final_russet_img_bgr)
@@ -91,4 +109,6 @@ def run2():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-run2()
+
+
+#run2()

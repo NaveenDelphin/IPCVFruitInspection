@@ -1,6 +1,6 @@
 from firstTask import run1 
 from secondTask import run2 
-from finalTask import run3
+from thirdTask import run3
 
 def main():
     # Calling the functions from the other files

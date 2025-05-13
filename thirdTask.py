@@ -40,7 +40,14 @@ def segment_fruit(nir_image):
     #Application of the masks to infrared images
     app_nir_temp = nir_image * (mask_temp/255)
 
-    return app_nir_temp.astype(np.uint8), mask_temp
+    open_ker=cv2.getStructuringElement(cv2.MORPH_RECT, (17,17))
+    open_def_temp=cv2.morphologyEx(otsu_temp, cv2.MORPH_OPEN, open_ker)
+    
+
+    #Application of the masks to infrared images
+    app_nir_temp_ref = nir_image * (open_def_temp/255)
+
+    return app_nir_temp_ref.astype(np.uint8), open_def_temp
 
 def detect_defects(fruit_mask, mask_temp):
 
@@ -57,7 +64,7 @@ def detect_defects(fruit_mask, mask_temp):
     cv2.imshow(" high_thresh", high_thresh1)
     
     img_blur = cv2.bilateralFilter(fruit_mask, 11, 35, 35)
-    edge  = cv2.Canny(img_blur, threshold1=50, threshold2=130)
+    edge  = cv2.Canny(img_blur, threshold1=50, threshold2=100)
     cv2.imshow("canny", edge)
     
     #Perform a closing operation to have better defects' edges
@@ -116,17 +123,18 @@ def contour_defects(open_temp, color_image):
 
     return result_image
 
-def run1():
+def run3():
 
-    picNo = input("Enter the picture number(1, 2 or 3): ")
+    picNo = input("Enter the picture number(6 to 10): ")
 
     # Load NIR and color images
-    nir_image = cv2.imread('Task1pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('Task1pics/C1_00000' + picNo +'.png')
+    nir_image = cv2.imread('Task3pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('Task3pics/C1_00000' + picNo +'.png')
 
-    # rgb_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
     fruit_mask, mask_temp = segment_fruit(nir_image)
-    edges = detect_defects(fruit_mask, mask_temp)
+    cv2.imshow("open_def_temp",mask_temp)
+    cv2.imshow("fruit_mask",fruit_mask)
+    edges = detect_defects(fruit_mask, ~mask_temp)
     detected_image = contour_defects(edges, color_image)
 
     
