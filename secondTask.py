@@ -12,8 +12,11 @@ def segment_fruit(nir_image, rgb_image):
     #Application of a Gaussian Blur
     blur_nir = cv2.GaussianBlur(nir_image,(3,3),0)
 
-    otsu_value = plot_nir_histogram_with_threshold(nir_image)
-    print('otsu_value',otsu_value)
+
+    #-------------------------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-------------------------------------
+    #For the Histogram and finding the optimal threshold value. Can be run only once during the start to find the best threshold value
+    #otsu_value = plot_nir_histogram_with_threshold(nir_image)
+    #print('otsu_value',otsu_value)
 
     #Thresholding to segment the image
     th, thresh = cv2.threshold(blur_nir, 50, 255, cv2.THRESH_BINARY)
@@ -23,12 +26,14 @@ def segment_fruit(nir_image, rgb_image):
     m1 = np.zeros((h+2, w+2), np.uint8)
     ff1 = thresh.copy()
     cv2.floodFill(ff1, m1, (0,0), 255)
+
     #we then invert the result obtained by the floodfill operation in order to highlight the holes
     holes = cv2.bitwise_not(ff1)
 
     #Mask of the apples
     mask_nir = holes | thresh
     mask_rgb = cv2.cvtColor(mask_nir, cv2.COLOR_GRAY2RGB)
+    cv2.imshow('mask_nir',mask_nir)
 
     #Application of the masks to infrared images
     seg_nir = nir_image * (mask_nir/255)
@@ -42,8 +47,10 @@ def segment_fruit(nir_image, rgb_image):
     return app_rgb
 
 def kmeans_fruit(app_rgb):
+
     # Convert the color image to the LAB color space
     color_lab = cv2.cvtColor(app_rgb, cv2.COLOR_RGB2LAB)
+
     # Extract the A and B channels
     lab_ab = color_lab[:, :, 1:3]
     height, width = lab_ab.shape[:2]
@@ -178,6 +185,8 @@ def run2():
 
     app_rgb = segment_fruit(nir_image, rgb_image)
 
+
+    #--------------------------------!!!!!!!!!!!!!!!!!!!!!!!----------------------------------
     #just for comparative study and to be run only once to have an understanding of colorspaces and choosing the best 
     #color_space_comparsion(app_rgb) 
 
