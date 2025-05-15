@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 def minkowski_subtraction(img):
 
@@ -20,6 +21,10 @@ def segment_fruit(nir_image):
 
     #Application of a Gaussian Blur
     blur_temp = cv2.GaussianBlur(nir_image,(3,3),0)
+
+    otsu_value = plot_nir_histogram_with_threshold(nir_image)
+    print('otsu_value',otsu_value)
+
 
     #Otsu Thresholding to segment the image
     th , otsu_temp = cv2.threshold(blur_temp, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY)
@@ -123,6 +128,24 @@ def contour_defects(open_temp, color_image):
 
     return result_image
 
+def plot_nir_histogram_with_threshold(nir_image):
+    pixel_values = nir_image.flatten()
+
+    otsu_value, _ = cv2.threshold(nir_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    plt.figure(figsize=(8, 5))
+    plt.hist(pixel_values, bins=256, range=(0, 256), color='gray', alpha=0.7, label='Pixel Intensity')
+    plt.axvline(otsu_value, color='red', linestyle='--', label=f'Otsu Threshold = {int(otsu_value)}')
+    plt.title("NIR Image Histogram with Otsu Threshold")
+    plt.xlabel("Pixel Intensity (0-255)")
+    plt.ylabel("Frequency")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    return otsu_value
+
 def run3():
 
     picNo = input("Enter the picture number(6 to 10): ")
@@ -144,5 +167,5 @@ def run3():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-#run1()
+#run3()
 
