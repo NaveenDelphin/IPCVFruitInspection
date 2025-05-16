@@ -175,6 +175,17 @@ def plot_nir_histogram_with_threshold(nir_image):
 
     return otsu_value
 
+def visualize_kmeans_clusters(segmented_img, k):
+    # Map cluster labels to colors
+    cluster_colors = (segmented_img * (255 // (k - 1))).astype(np.uint8)
+    
+    # Use a colormap for better visual appeal
+    plt.figure(figsize=(6, 5))
+    plt.imshow(cluster_colors, cmap='viridis')
+    plt.title(f"KMeans Segmentation ({k} Clusters)")
+    plt.axis('off')
+    plt.show()
+
 
 def run2():
     picNo = input("Enter the picture number(4 or 5): ")
@@ -191,6 +202,10 @@ def run2():
     #color_space_comparsion(app_rgb) 
 
     russet_cluster_idx, lab_ab, segmented_img = kmeans_fruit(app_rgb)
+
+    #---------------------------------!!!!!!!!!!!!!!!!!!!!!!----------------------------------
+    #Just to give an idea of how clustering looks like by kmeans
+    #visualize_kmeans_clusters(segmented_img, k=3)
 
     final_russet_img_bgr = mahalanobis_fruit(russet_cluster_idx, lab_ab, segmented_img, rgb_image)    
 
