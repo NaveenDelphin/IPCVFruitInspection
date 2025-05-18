@@ -151,8 +151,8 @@ def run3():
     picNo = input("Enter the picture number(6 to 10): ")
 
     # Load NIR and color images
-    nir_image = cv2.imread('Task3pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('Task3pics/C1_00000' + picNo +'.png')
+    nir_image = cv2.imread('Task3pics/C0_00001' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('Task3pics/C1_00001' + picNo +'.png')
 
     fruit_mask, mask_temp = segment_fruit(nir_image)
     cv2.imshow("open_def_temp",mask_temp)
@@ -162,7 +162,7 @@ def run3():
 
     
     cv2.imshow("Segmented Fruit", fruit_mask)
-    cv2.imshow("Edges (Minkowski Subtraction)", edges.astype(np.uint8))
+    cv2.imshow("Edges", edges.astype(np.uint8))
     # cv2.imshow("Defects", defects)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
