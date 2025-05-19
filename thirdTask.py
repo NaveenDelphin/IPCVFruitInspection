@@ -151,8 +151,8 @@ def run3():
     picNo = input("Enter the picture number(6 to 10): ")
 
     # Load NIR and color images
-    nir_image = cv2.imread('Task3pics/C0_00001' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
-    color_image = cv2.imread('Task3pics/C1_00001' + picNo +'.png')
+    nir_image = cv2.imread('Task3pics/C0_00000' + picNo +'.png', cv2.IMREAD_GRAYSCALE)
+    color_image = cv2.imread('Task3pics/C1_00000' + picNo +'.png')
 
     fruit_mask, mask_temp = segment_fruit(nir_image)
     cv2.imshow("open_def_temp",mask_temp)

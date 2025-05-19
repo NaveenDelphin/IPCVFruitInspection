@@ -49,17 +49,25 @@ def segment_fruit(nir_image):
 
 def detect_defects(fruit_mask, mask_temp):
 
+
+#---------------------> set minkowski to true to try minkowski <-----------------------------
+    minkowski = False
+
     # Apply Minkowski Subtraction for edge extraction
     edges_temp = minkowski_subtraction(fruit_mask)
     # Sharpen the edges
     sharpen_kernel = np.array([[-1, -1, -1], 
                                [-1,  9, -1], 
-                               [-1, -1, -1]])
+                              [-1, -1, -1]])
+   
     sharpened_edges = cv2.filter2D(edges_temp, -1, sharpen_kernel)
-    cv2.imshow("sharpened_edges", sharpened_edges.astype(np.uint8))
+    #cv2.imshow("sharpened_edges", sharpened_edges.astype(np.uint8))
     
-    _, high_thresh1 = cv2.threshold(sharpened_edges, 180, 255, cv2.THRESH_BINARY)
+    _, high_thresh1 = cv2.threshold(edges_temp, 180, 255, cv2.THRESH_BINARY)
     cv2.imshow(" high_thresh", high_thresh1)
+
+    #sharpened_edges = cv2.filter2D(high_thresh1, -1, sharpen_kernel)
+    #cv2.imshow("sharpened_edges", sharpened_edges.astype(np.uint8))
     
     img_blur = cv2.bilateralFilter(fruit_mask, 11, 35, 35)
     edge  = cv2.Canny(img_blur, threshold1=50, threshold2=130)
@@ -67,8 +75,10 @@ def detect_defects(fruit_mask, mask_temp):
     
     #Perform a closing operation to have better defects' edges
     clo_ker = cv2.getStructuringElement(cv2.MORPH_CROSS, (5,5))
-    #high_thresh = high_thresh.astype(np.uint8)
-    high_thresh = edge.astype(np.uint8)
+    if minkowski == True:
+        high_thresh = high_thresh1.astype(np.uint8)
+    else:    
+        high_thresh = edge.astype(np.uint8)
     closing_temp=cv2.morphologyEx(high_thresh, cv2.MORPH_CLOSE, clo_ker)
     cv2.imshow("closing_temp", closing_temp)
 
